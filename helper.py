@@ -15,7 +15,7 @@ if __name__ == "__main__":
 from pathlib import Path
 
 from tkinter import Toplevel, Canvas, Button as TkButton#, PhotoImage
-from tkinter.ttk import Frame, Label#, Notebook, Entry, Button, Style
+from tkinter.ttk import Frame, Label, Scrollbar#, Notebook, Entry, Button, Style
 from tkinter.colorchooser import askcolor
 
 FILE_TYPES = (('PNG', '*.png'),
@@ -47,7 +47,10 @@ class TabConfig:
             self.eraser_on = tab.eraser_on
             self.active_button = tab.active_button["text"] \
                 if tab.active_button else None
-            self.size = tab.size
+            self.tool_size = tab.tool_size
+            tab.canvas.update()
+            self.img_w = tab.canvas.winfo_width()
+            self.img_h = tab.canvas.winfo_height()
 
             # Make menu option to change it
             # https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/create_line.html
@@ -62,7 +65,7 @@ class TabConfig:
             self.color = self.default_color
             self.eraser_on = False
             self.active_button = None
-            self.size = 1
+            self.tool_size = 1
 
             self.capstyle = 'butt'
 
@@ -80,8 +83,20 @@ class ClosableTabFrame(Frame, TabConfig):
         self.hidden = False
         self.root = root
 
-        self.canvas = Canvas(self, bg='white')
-        self.canvas.pack(expand=True, fill="both")
+        frame=Frame(self)
+        frame.pack(expand=True, fill="both")
+        self.canvas = Canvas(frame, bg='white', width=1280, height=720)
+        
+        self.hbar = Scrollbar(frame, orient="horizontal")
+        self.hbar.pack(side="bottom", fill="x")
+        self.hbar.config(command=self.canvas.xview)
+        
+        self.vbar = Scrollbar(frame, orient="vertical")
+        self.vbar.pack(side="right", fill="y")
+        self.vbar.config(command=self.canvas.yview)
+        self.canvas.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
+
+        self.canvas.pack(anchor="nw", expand=True)
 
         self.history = []
 
